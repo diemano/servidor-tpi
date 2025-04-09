@@ -1,4 +1,3 @@
-# servidor_gemini_requests.py
 from fastapi import FastAPI
 from pydantic import BaseModel
 import requests
@@ -9,38 +8,35 @@ app = FastAPI()
 class Pergunta(BaseModel):
     texto: str
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={API_KEY}"
 
 @app.post("/pergunta")
 async def responder(pergunta: Pergunta):
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={GEMINI_API_KEY}"
+    prompt = f"""
+    Responda com os símbolos dos elementos químicos mencionados na pergunta abaixo. Apenas os símbolos, separados por vírgula. Não explique.
+
+    Pergunta: {pergunta.texto}
+    """
+
+    payload = {
+        "contents": [
+            {
+                "parts": [{"text": prompt}]
+            }
+        ]
+    }
 
     headers = {
         "Content-Type": "application/json"
     }
 
-    body = {
-        "contents": [
-            {
-                "parts": [
-                    {
-                        "text": f"Responda à pergunta listando APENAS os símbolos dos elementos químicos, separados por vírgula. Sem explicações.\n\nPergunta: {pergunta.texto}\n\nResposta:"
-                    }
-                ]
-            }
-        ]
-    }
-
     try:
-        response = requests.post(url, headers=headers, json=body)
+        response = requests.post(GEMINI_URL, json=payload, headers=headers)
+        response.raise_for_status()
         data = response.json()
 
-        if "candidates" in data:
-            resposta_texto = data["candidates"][0]["content"]["parts"][0]["text"]
-            elementos = resposta_texto.strip().replace("\n", "").replace(" ", "")
-            return {"elementos": elementos}
-        else:
-            return {"erro": data.get("error", {}).get("message", "Erro desconhecido")}
-
+        elementos = data["candidates"][0]["content"]["parts"][0]["text"].strip()
+        return {"elementos": elementos}
     except Exception as e:
         return {"erro": str(e)}
