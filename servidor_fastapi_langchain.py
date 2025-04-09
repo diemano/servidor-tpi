@@ -14,13 +14,14 @@ llm = ChatOpenAI(temperature=0)
 
 prompt = PromptTemplate(
     input_variables=["pergunta"],
-    template=\"\"\"
+    template= 
+    """
 Você é um assistente de química. Responda à pergunta abaixo listando SOMENTE os símbolos dos elementos químicos envolvidos, separados por vírgula, sem explicações adicionais.
 
 Pergunta: {pergunta}
 
 Resposta:
-\"\"\"
+"""
 )
 
 chain = LLMChain(llm=llm, prompt=prompt)
