@@ -9,7 +9,7 @@ class Pergunta(BaseModel):
     texto: str
 
 API_KEY = os.getenv("GEMINI_API_KEY")
-GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={API_KEY}"
+GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key={API_KEY}"
 
 @app.post("/pergunta")
 async def responder(pergunta: Pergunta):
